@@ -60,9 +60,9 @@ rules_foreign_cc_dependencies([
 http_archive(
     name = "com_github_libevent_libevent",
     build_file = "//bazel:libevent.BUILD",
-    strip_prefix = "libevent-release-2.1.10-stable",
+    strip_prefix = "libevent-release-2.1.8-stable",
     urls = [
-        "https://github.com/libevent/libevent/archive/release-2.1.10-stable.zip",
+        "https://github.com/libevent/libevent/archive/release-2.1.8-stable.zip",
     ],
 )
 
