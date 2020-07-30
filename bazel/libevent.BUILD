@@ -16,13 +16,17 @@ cmake_external(
         "EVENT__DISABLE_REGRESS": "on",
         "EVENT__DISABLE_TESTS": "on",
     },
+    cmake_options = select({
+        "@io_opentelemetry_cpp//bazel:windows": ["-GNinja"],
+        "//conditions:default": None,
+    }),
     generate_crosstool_file = select({
         "@io_opentelemetry_cpp//bazel:windows": True,
         "//conditions:default": None,
     }),
     lib_source = ":srcs",
     make_commands = select({
-        "@io_opentelemetry_cpp//bazel:windows": ["MSBuild.exe INSTALL.vcxproj"],
+        "@io_opentelemetry_cpp//bazel:windows": ["ninja", "ninja install"],
         "//conditions:default": None,
     }),
     static_libraries = select({
