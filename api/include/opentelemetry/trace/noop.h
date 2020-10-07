@@ -14,6 +14,7 @@
 #include "opentelemetry/version.h"
 
 #include <memory>
+#include <iostream>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace trace
@@ -64,6 +65,7 @@ public:
   // Tracer
   nostd::shared_ptr<Span> StartSpan(nostd::string_view /*name*/,
                                     const KeyValueIterable & /*attributes*/,
+                                    const SpanContextKeyValueIterable & /*links*/,
                                     const StartSpanOptions & /*options*/) noexcept override
   {
     // Don't allocate a no-op span for every StartSpan call, but use a static
