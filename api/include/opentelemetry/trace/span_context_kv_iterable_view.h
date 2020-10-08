@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "opentelemetry/nostd/utility.h"
-#include "opentelemetry/trace/span_context_kv_iterable.h"
 #include "opentelemetry/trace/key_value_iterable_view.h"
+#include "opentelemetry/trace/span_context_kv_iterable.h"
 #include "opentelemetry/version.h"
 
 OPENTELEMETRY_BEGIN_NAMESPACE
@@ -14,13 +14,18 @@ namespace trace
 {
 namespace detail
 {
-template<class T>
-inline void take_span_context_kv(SpanContext, opentelemetry::trace::KeyValueIterableView<T>) {}
+template <class T>
+inline void take_span_context_kv(SpanContext, opentelemetry::trace::KeyValueIterableView<T>)
+{}
 
-template<class T, nostd::enable_if_t<detail::is_key_value_iterable<T>::value> * = nullptr>
-inline void take_span_context_kv(SpanContext, T&) {}
+template <class T, nostd::enable_if_t<detail::is_key_value_iterable<T>::value> * = nullptr>
+inline void take_span_context_kv(SpanContext, T &)
+{}
 
-inline void take_span_context_kv(SpanContext, std::initializer_list<std::pair<nostd::string_view, common::AttributeValue>>) {}
+inline void take_span_context_kv(
+    SpanContext,
+    std::initializer_list<std::pair<nostd::string_view, common::AttributeValue>>)
+{}
 
 template <class T>
 auto is_span_context_kv_iterable_impl(T iterable)
@@ -33,21 +38,23 @@ std::false_type is_span_context_kv_iterable_impl(...);
 template <class T>
 struct is_span_context_kv_iterable
 {
-  static const bool value = decltype(detail::is_span_context_kv_iterable_impl(std::declval<T>()))::value;
+  static const bool value =
+      decltype(detail::is_span_context_kv_iterable_impl(std::declval<T>()))::value;
 };
 }  // namespace detail
 
 template <class T>
 class SpanContextKeyValueIterableView final : public SpanContextKeyValueIterable
 {
-  static_assert(detail::is_span_context_kv_iterable<T>::value, "Must be a context/key-value iterable");
+  static_assert(detail::is_span_context_kv_iterable<T>::value,
+                "Must be a context/key-value iterable");
 
 public:
   explicit SpanContextKeyValueIterableView(const T &links) noexcept : container_{&links} {}
 
   bool ForEachKeyValue(
-      nostd::function_ref<bool(SpanContext, nostd::string_view, common::AttributeValue)> callback) const
-      noexcept override
+      nostd::function_ref<bool(SpanContext, nostd::string_view, common::AttributeValue)> callback)
+      const noexcept override
   {
     auto iter = std::begin(*container_);
     auto last = std::end(*container_);
@@ -55,7 +62,8 @@ public:
     {
       auto kv_iter = std::begin(iter->second);
       auto kv_last = std::end(iter->second);
-      for (; kv_iter != kv_last; ++kv_iter) {
+      for (; kv_iter != kv_last; ++kv_iter)
+      {
         if (!callback(iter->first, kv_iter->first, kv_iter->second))
         {
           return false;

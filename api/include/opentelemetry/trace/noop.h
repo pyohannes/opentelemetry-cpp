@@ -14,7 +14,6 @@
 #include "opentelemetry/version.h"
 
 #include <memory>
-#include <iostream>
 
 OPENTELEMETRY_BEGIN_NAMESPACE
 namespace trace

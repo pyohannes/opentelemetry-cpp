@@ -22,8 +22,8 @@ public:
    * @return true if every SpanContext/key-value pair was iterated over
    */
   virtual bool ForEachKeyValue(
-      nostd::function_ref<bool(SpanContext, nostd::string_view, common::AttributeValue)> callback) const
-      noexcept = 0;
+      nostd::function_ref<bool(SpanContext, nostd::string_view, common::AttributeValue)> callback)
+      const noexcept = 0;
 
   /**
    * @return the number of key-value pairs
