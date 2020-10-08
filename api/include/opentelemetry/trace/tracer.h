@@ -75,7 +75,6 @@ public:
     return this->StartSpan(name,
                            nostd::span<const std::pair<nostd::string_view, common::AttributeValue>>{
                                attributes.begin(), attributes.end()},
-                           //{},
                            options);
   }
 
@@ -92,10 +91,9 @@ public:
         name,
         nostd::span<const std::pair<nostd::string_view, common::AttributeValue>>{attributes.begin(),
                                                                                  attributes.end()},
-        // nostd::span<const std::pair<SpanContext,
-        // std::initializer_list<std::pair<nostd::string_view, common::AttributeValue>>>>{
-        //    links.begin(), links.end()},
-        // nostd::span<const std::pair<SpanContext, SpanContextKeyValueIterable>{},
+        nostd::span<const std::pair<SpanContext, std::initializer_list<std::pair<
+                                                     nostd::string_view, common::AttributeValue>>>>{
+            links.begin(), links.end()},
         options);
   }
 
