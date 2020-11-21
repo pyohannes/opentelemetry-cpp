@@ -100,7 +100,7 @@ public:
       return;
     }
 
-    curl_easy_setopt(curl_, CURLOPT_VERBOSE, 0);
+    curl_easy_setopt(curl_, CURLOPT_VERBOSE, 1);
 
     // Specify target URL
     curl_easy_setopt(curl_, CURLOPT_URL, url_.c_str());

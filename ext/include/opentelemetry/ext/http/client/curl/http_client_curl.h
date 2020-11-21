@@ -116,6 +116,8 @@ public:
     if (host.rfind("http://", 0) != 0 && host.rfind("https://", 0) != 0)
     {
       host_ = "http://" + host;  // TODO - https support
+    } else {
+	host_ = host;
     }
     host_ += ":" + std::to_string(port) + "/";
   }
