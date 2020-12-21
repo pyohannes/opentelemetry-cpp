@@ -65,6 +65,7 @@ public:
 
   void Inject(Setter setter, T &carrier, const context::Context &context) noexcept override
   {
+      std::cout << "### injecting in API\n";
     SpanContext span_context = GetCurrentSpan(context);
     if (!span_context.IsValid())
     {
@@ -78,16 +79,14 @@ public:
                            context::Context &context) noexcept override
   {
     SpanContext span_context    = ExtractImpl(getter, carrier);
-    nostd::string_view span_key = "current-span";
     nostd::shared_ptr<Span> sp{new DefaultSpan(span_context)};
-    return context.SetValue(span_key, sp);
+    return context.SetValue(SpanKey, sp);
   }
 
   static SpanContext GetCurrentSpan(const context::Context &context)
   {
-    const nostd::string_view span_key = "current-span";
     context::Context ctx(context);
-    context::ContextValue span = ctx.GetValue(span_key);
+    context::ContextValue span = ctx.GetValue(SpanKey);
     if (nostd::holds_alternative<nostd::shared_ptr<Span>>(span))
     {
       return nostd::get<nostd::shared_ptr<Span>>(span).get()->GetContext();

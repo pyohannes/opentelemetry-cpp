@@ -2,6 +2,9 @@
 #include "opentelemetry/sdk/trace/tracer_provider.h"
 #include "opentelemetry/trace/provider.h"
 #include "opentelemetry/trace/scope.h"
+#include "opentelemetry/trace/propagation/http_text_format.h"
+#include "opentelemetry/trace/propagation/http_trace_context.h"
+#include "opentelemetry/context/runtime_context.h"
 
 #define HAVE_HTTP_DEBUG 1
 #include "opentelemetry/ext/http/server/http_server.h"
@@ -13,9 +16,28 @@
 #include "opentelemetry/exporters/ostream/span_exporter.h"
 
 #include <algorithm>
-/*
+
 namespace
 {
+static void Setter(std::map<std::string, std::string> &carrier,
+		   nostd::string_view trace_type        = "traceparent",
+                   nostd::string_view trace_description = "")
+{
+    std::cout << "### Injecting " << trace_type << "\n";
+  carrier[std::string(trace_type)] = std::string(trace_description);
+}
+
+static nostd::string_view Getter(const std::map<std::string, std::string> &carrier,
+                                 nostd::string_view trace_type = "traceparent")
+{
+  auto it = carrier.find(std::string(trace_type));
+  if (it != carrier.end())
+  {
+    return nostd::string_view(it->second);
+  }
+  return "";
+}
+
 void initTracer()
 {
   auto exporter = std::unique_ptr<sdktrace::SpanExporter>(
@@ -34,7 +56,7 @@ nostd::shared_ptr<opentelemetry::trace::Tracer> get_tracer()
   return provider->GetTracer("foo_library");
 }
 }  // namespace
-*/
+
 
 class CustomEventHandler : public opentelemetry::ext::http::client::EventHandler
 {
@@ -53,20 +75,30 @@ class CustomEventHandler : public opentelemetry::ext::http::client::EventHandler
 };
 int main()
 {
-  /*
   initTracer();
 
   auto root_span = get_tracer()->StartSpan(__func__);
   opentelemetry::trace::Scope scope(root_span);
-  */
 
   testing::HttpServer server("localhost", 30000);
   opentelemetry::ext::http::client::curl::SessionManager client;
+
+  opentelemetry::trace::propagation::HttpTraceContext<std::map<std::string, std::string>> format; 
 
   testing::HttpRequestCallback test_cb{[&](testing::HttpRequest const &req, testing::HttpResponse &resp) {
       auto body = nlohmann::json::parse(req.content);
 
       for (auto& part : body) {
+	  auto current_ctx = opentelemetry::context::RuntimeContext::GetCurrent();
+	  for (auto& hdr : req.headers) {
+	      std::cout << "### incoming header " << hdr.first << ": " << hdr.second << "\n";
+	  }
+	  auto ctx = format.Extract(Getter, req.headers, current_ctx);
+	  auto token = opentelemetry::context::RuntimeContext::Attach(ctx);
+
+          auto request_span = get_tracer()->StartSpan("Request");
+          opentelemetry::trace::Scope scope(request_span);
+
 	  auto url = part["url"].get<std::string>();
 	  auto arguments = part["arguments"].dump();
 
@@ -84,11 +116,18 @@ int main()
 
 	  request->SetMethod(opentelemetry::ext::http::client::Method::Post);
 	  request->SetUri(path);
-	  arguments = "hi";
-	  opentelemetry::ext::http::client::Body b = {'a', 'b', 'c', 'd', 0};
+	  opentelemetry::ext::http::client::Body b = {arguments.c_str(), arguments.c_str() + arguments.size()};
 	  request->SetBody(b);
 	  request->AddHeader("Content-Type", "application/json");
 	  request->AddHeader("Content-Length", std::to_string(arguments.size()));
+
+	  std::map<std::string, std::string> headers;
+	  format.Inject(Setter, headers, opentelemetry::context::RuntimeContext::GetCurrent());
+
+	  for (auto const &hdr : headers) {
+	      std::cout << "### Add header " << hdr.first << " " << hdr.second << "\n";
+	      request->AddHeader(hdr.first, hdr.second);
+	  }
 
 	  std::unique_ptr<opentelemetry::ext::http::client::EventHandler> handler(new CustomEventHandler());
 	  std::cout << "### Send Request\n";
