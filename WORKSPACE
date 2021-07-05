@@ -62,6 +62,35 @@ new_local_repository(
     path = "third_party/opentelemetry-proto",
 )
 
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "64ad2728ccdd2044216e4cec7815918b7bb3bb28c95b7e9d951f9d4eccb07625",
+    strip_prefix = "bazel-skylib-1.0.2",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/archive/1.0.2.zip",
+    ],
+)
+
+http_archive(
+    name = "rules_foreign_cc",
+    strip_prefix = "rules_foreign_cc-456425521973736ef346d93d3d6ba07d807047df",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/456425521973736ef346d93d3d6ba07d807047df.zip",
+)
+
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies([
+])
+
+http_archive(
+    name = "com_github_libevent_libevent",
+    build_file = "//bazel:libevent.BUILD",
+    strip_prefix = "libevent-release-2.1.8-stable",
+    urls = [
+        "https://github.com/libevent/libevent/archive/release-2.1.8-stable.zip",
+    ],
+)
+
 # GoogleTest framework.
 # Only needed for tests, not to build the OpenTelemetry library.
 http_archive(
